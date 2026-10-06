@@ -1,0 +1,566 @@
+{% doc %}
+  @prompt
+    Ik gebruik de Shoppable UGC Gallery widget/sectie op mijn website. Momenteel vraagt deze widget om een 'Video URL' (zoals TikTok- of Instagram-links). Omdat externe social media-links vaak worden geblokkeerd of niet goed inladen, wil ik de video's graag rechtstreeks vanaf mijn Mac/PC kunnen uploaden.
+    
+    Zou je het onderstaande voor mij kunnen aanpassen/realiseren?
+    
+    Voeg een bestands-uploadknop (file picker) toe voor de video-items (Video 1 t/m 4), zodat ik rechtstreeks MP4-, MOV- of WebM-bestanden vanaf mijn lokale computer kan uploaden.
+    
+    Zorg ervoor dat de gallery deze geüploade videobestanden direct in de kaart/speler afspeelt (bijvoorbeeld via een HTML5 <video> element met autoplay, loop, muted en playsinline), in plaats van afhankelijk te zijn van een externe Iframe/embed URL.
+    
+    Zorg ervoor dat het selecteren van producten (de 'Select' knop voor koppelbare producten) gewoon blijft werken voor de geüploade video's.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-ugc-gallery-{{ ai_gen_id }} {
+    width: 100%;
+    padding: 40px 20px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-ugc-gallery-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.max_width }}px;
+    margin: 0 auto;
+  }
+
+  .ai-ugc-gallery-header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .ai-ugc-gallery-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 10px;
+  }
+
+  .ai-ugc-gallery-subtitle-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subtitle_size }}px;
+    color: {{ block.settings.subtitle_color }};
+    margin: 0;
+  }
+
+  .ai-ugc-gallery-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: {{ block.settings.grid_gap }}px;
+  }
+
+  .ai-ugc-gallery-item-{{ ai_gen_id }} {
+    position: relative;
+    border-radius: {{ block.settings.card_radius }}px;
+    overflow: hidden;
+    background-color: {{ block.settings.card_background }};
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ai-ugc-gallery-item-{{ ai_gen_id }}:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-ugc-gallery-video-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    padding-bottom: 177.78%;
+    background-color: #f0f0f0;
+    overflow: hidden;
+  }
+
+  .ai-ugc-gallery-video-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-ugc-gallery-placeholder-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4f4f4;
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .ai-ugc-gallery-placeholder-{{ ai_gen_id }} svg {
+    width: 60px;
+    height: 60px;
+    opacity: 0.3;
+  }
+
+  .ai-ugc-gallery-products-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    padding: 20px 15px 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ai-ugc-gallery-product-tag-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: {{ block.settings.tag_background }};
+    color: {{ block.settings.tag_text_color }};
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  .ai-ugc-gallery-product-tag-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.tag_hover_background }};
+  }
+
+  .ai-ugc-gallery-product-image-{{ ai_gen_id }} {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .ai-ugc-gallery-empty-state-{{ ai_gen_id }} {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+
+  .ai-ugc-gallery-empty-state-{{ ai_gen_id }} h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .ai-ugc-gallery-empty-state-{{ ai_gen_id }} p {
+    font-size: 14px;
+    color: #999;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-ugc-gallery-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: {{ block.settings.grid_gap | times: 0.7 }}px;
+    }
+
+    .ai-ugc-gallery-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size | times: 0.8 }}px;
+    }
+
+    .ai-ugc-gallery-subtitle-{{ ai_gen_id }} {
+      font-size: {{ block.settings.subtitle_size | times: 0.9 }}px;
+    }
+  }
+{% endstyle %}
+
+<ugc-gallery-{{ ai_gen_id }} class="ai-ugc-gallery-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-ugc-gallery-container-{{ ai_gen_id }}">
+    {% if block.settings.title != blank or block.settings.subtitle != blank %}
+      <div class="ai-ugc-gallery-header-{{ ai_gen_id }}">
+        {% if block.settings.title != blank %}
+          <h2 class="ai-ugc-gallery-title-{{ ai_gen_id }}">{{ block.settings.title }}</h2>
+        {% endif %}
+        {% if block.settings.subtitle != blank %}
+          <p class="ai-ugc-gallery-subtitle-{{ ai_gen_id }}">{{ block.settings.subtitle }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% assign has_videos = false %}
+    {% for i in (1..4) %}
+      {% liquid
+        assign video_key = 'video_' | append: i
+        assign video = block.settings[video_key]
+        if video != blank
+          assign has_videos = true
+          break
+        endif
+      %}
+    {% endfor %}
+
+    {% if has_videos %}
+      <div class="ai-ugc-gallery-grid-{{ ai_gen_id }}">
+        {% for i in (1..4) %}
+          {% liquid
+            assign video_key = 'video_' | append: i
+            assign product_1_key = 'video_' | append: i | append: '_product_1'
+            assign product_2_key = 'video_' | append: i | append: '_product_2'
+            assign product_3_key = 'video_' | append: i | append: '_product_3'
+            
+            assign video = block.settings[video_key]
+            assign product_1 = block.settings[product_1_key]
+            assign product_2 = block.settings[product_2_key]
+            assign product_3 = block.settings[product_3_key]
+          %}
+
+          {% if video != blank %}
+            <div class="ai-ugc-gallery-item-{{ ai_gen_id }}">
+              <div class="ai-ugc-gallery-video-wrapper-{{ ai_gen_id }}">
+                <video
+                  class="ai-ugc-gallery-video-{{ ai_gen_id }}"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  preload="metadata"
+                >
+                  <source src="{{ video }}" type="video/mp4">
+                  <source src="{{ video }}" type="video/webm">
+                  <source src="{{ video }}" type="video/quicktime">
+                </video>
+              </div>
+
+              {% if product_1 != blank or product_2 != blank or product_3 != blank %}
+                <div class="ai-ugc-gallery-products-{{ ai_gen_id }}">
+                  {% if product_1 != blank %}
+                    <a href="{{ product_1.url }}" class="ai-ugc-gallery-product-tag-{{ ai_gen_id }}">
+                      {% if product_1.featured_image %}
+                        <img
+                          src="{{ product_1.featured_image | image_url: width: 60 }}"
+                          alt="{{ product_1.title | escape }}"
+                          class="ai-ugc-gallery-product-image-{{ ai_gen_id }}"
+                          width="30"
+                          height="30"
+                          loading="lazy"
+                        >
+                      {% endif %}
+                      <span>{{ product_1.title }}</span>
+                    </a>
+                  {% endif %}
+
+                  {% if product_2 != blank %}
+                    <a href="{{ product_2.url }}" class="ai-ugc-gallery-product-tag-{{ ai_gen_id }}">
+                      {% if product_2.featured_image %}
+                        <img
+                          src="{{ product_2.featured_image | image_url: width: 60 }}"
+                          alt="{{ product_2.title | escape }}"
+                          class="ai-ugc-gallery-product-image-{{ ai_gen_id }}"
+                          width="30"
+                          height="30"
+                          loading="lazy"
+                        >
+                      {% endif %}
+                      <span>{{ product_2.title }}</span>
+                    </a>
+                  {% endif %}
+
+                  {% if product_3 != blank %}
+                    <a href="{{ product_3.url }}" class="ai-ugc-gallery-product-tag-{{ ai_gen_id }}">
+                      {% if product_3.featured_image %}
+                        <img
+                          src="{{ product_3.featured_image | image_url: width: 60 }}"
+                          alt="{{ product_3.title | escape }}"
+                          class="ai-ugc-gallery-product-image-{{ ai_gen_id }}"
+                          width="30"
+                          height="30"
+                          loading="lazy"
+                        >
+                      {% endif %}
+                      <span>{{ product_3.title }}</span>
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="ai-ugc-gallery-empty-state-{{ ai_gen_id }}">
+        <h3>Voeg video's toe aan je gallery</h3>
+        <p>Upload MP4-, MOV- of WebM-bestanden om je shoppable UGC gallery te vullen</p>
+      </div>
+    {% endif %}
+  </div>
+</ugc-gallery-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class UgcGallery{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.videos = this.querySelectorAll('.ai-ugc-gallery-video-{{ ai_gen_id }}');
+        this.setupVideoObserver();
+      }
+
+      setupVideoObserver() {
+        const options = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.5
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+              video.play().catch(() => {});
+            } else {
+              video.pause();
+            }
+          });
+        }, options);
+
+        this.videos.forEach((video) => {
+          observer.observe(video);
+          
+          video.addEventListener('error', function() {
+            const wrapper = this.closest('.ai-ugc-gallery-video-wrapper-{{ ai_gen_id }}');
+            if (wrapper && !wrapper.querySelector('.ai-ugc-gallery-placeholder-{{ ai_gen_id }}')) {
+              const placeholder = document.createElement('div');
+              placeholder.className = 'ai-ugc-gallery-placeholder-{{ ai_gen_id }}';
+              placeholder.innerHTML = '<div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg><p>Video kan niet worden geladen</p></div>';
+              wrapper.appendChild(placeholder);
+              this.style.display = 'none';
+            }
+          });
+        });
+      }
+    }
+
+    customElements.define('ugc-gallery-{{ ai_gen_id }}', UgcGallery{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Shoppable UGC gallery",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Algemeen"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titel",
+      "default": "Shop de look"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Ondertitel",
+      "default": "Ontdek onze favoriete producten in actie"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximale breedte",
+      "min": 800,
+      "max": 1600,
+      "step": 100,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "header",
+      "content": "Video 1"
+    },
+    {
+      "type": "video",
+      "id": "video_1",
+      "label": "Video bestand"
+    },
+    {
+      "type": "product",
+      "id": "video_1_product_1",
+      "label": "Product 1"
+    },
+    {
+      "type": "product",
+      "id": "video_1_product_2",
+      "label": "Product 2"
+    },
+    {
+      "type": "product",
+      "id": "video_1_product_3",
+      "label": "Product 3"
+    },
+    {
+      "type": "header",
+      "content": "Video 2"
+    },
+    {
+      "type": "video",
+      "id": "video_2",
+      "label": "Video bestand"
+    },
+    {
+      "type": "product",
+      "id": "video_2_product_1",
+      "label": "Product 1"
+    },
+    {
+      "type": "product",
+      "id": "video_2_product_2",
+      "label": "Product 2"
+    },
+    {
+      "type": "product",
+      "id": "video_2_product_3",
+      "label": "Product 3"
+    },
+    {
+      "type": "header",
+      "content": "Video 3"
+    },
+    {
+      "type": "video",
+      "id": "video_3",
+      "label": "Video bestand"
+    },
+    {
+      "type": "product",
+      "id": "video_3_product_1",
+      "label": "Product 1"
+    },
+    {
+      "type": "product",
+      "id": "video_3_product_2",
+      "label": "Product 2"
+    },
+    {
+      "type": "product",
+      "id": "video_3_product_3",
+      "label": "Product 3"
+    },
+    {
+      "type": "header",
+      "content": "Video 4"
+    },
+    {
+      "type": "video",
+      "id": "video_4",
+      "label": "Video bestand"
+    },
+    {
+      "type": "product",
+      "id": "video_4_product_1",
+      "label": "Product 1"
+    },
+    {
+      "type": "product",
+      "id": "video_4_product_2",
+      "label": "Product 2"
+    },
+    {
+      "type": "product",
+      "id": "video_4_product_3",
+      "label": "Product 3"
+    },
+    {
+      "type": "header",
+      "content": "Stijl"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Achtergrondkleur",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Titelkleur",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Titelgrootte",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Ondertitelkleur",
+      "default": "#666666"
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "label": "Ondertitelgrootte",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Kaart achtergrond",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Kaart afronding",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Ruimte tussen items",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Product tags"
+    },
+    {
+      "type": "color",
+      "id": "tag_background",
+      "label": "Tag achtergrond",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "tag_hover_background",
+      "label": "Tag hover achtergrond",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "color",
+      "id": "tag_text_color",
+      "label": "Tag tekstkleur",
+      "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shoppable UGC gallery"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,882 @@
+{% doc %}
+  @prompt
+    Build a custom, high-end website section for a Shopify product page, based precisely on the structure and content types seen in 'Schermafbeelding 2026-08-04 om 12.00.50.jpg'. The section must create a visually distinct, shoppable UGC (User Generated Content) gallery.
+    
+    1. Layout: Create a rigid, single-row grid of four vertical video cards (4 columns). Each card must maintain a 9:16 aspect ratio (like TikTok/Reels) with rounded corners. The entire grid must be center-aligned on a clean, solid background.
+    
+    2. Content & Interactivity (Per Card): Each of the four cards will act as a container for a unique vertical video. The videos must be auto-playing (muted) or have a play-on-hover effect.
+    
+    3. Shoppable Pop-up (Interactive Modal): When a user clicks on any individual card, it must open a modal (pop-up) window. This modal must show the full-size video playing on the left, and a product details panel on the right.
+    
+    4. Product Details Panel (Right Side of Modal): This panel must feature:
+    
+    The name of the primary product featured (e.g., 'Muse Bag - Yellow').
+    
+    Current Price.
+    
+    A size selector (e.g., Small, Large).
+    
+    An 'Add to Cart' button.
+    
+    5. Visual Styling: Clean, minimalist French luxury aesthetic. Clean typography. Subtle drop shadows on the cards. The overall color palette must be warm and matching the products (light yellows, tan, and dark leather), as indicated by the items and textures visible in 'Schermafbeelding 2026-08-04 om 12.00.50.jpg'."
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-ugc-gallery-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.section_padding }}px 20px;
+  }
+
+  .ai-ugc-gallery-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.max_width }}px;
+    margin: 0 auto;
+  }
+
+  .ai-ugc-gallery-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: {{ block.settings.card_gap }}px;
+    justify-content: center;
+  }
+
+  .ai-ugc-card-{{ ai_gen_id }} {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    border-radius: {{ block.settings.card_border_radius }}px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 {{ block.settings.shadow_vertical }}px {{ block.settings.shadow_blur }}px rgba(0, 0, 0, {{ block.settings.shadow_opacity }});
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f4f4f4;
+  }
+
+  .ai-ugc-card-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 {{ block.settings.shadow_vertical | plus: 4 }}px {{ block.settings.shadow_blur | plus: 8 }}px rgba(0, 0, 0, {{ block.settings.shadow_opacity | plus: 0.1 }});
+  }
+
+  .ai-ugc-card-video-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-ugc-card-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f5dc 0%, #d2b48c 100%);
+    position: relative;
+  }
+
+  .ai-ugc-card-placeholder-{{ ai_gen_id }} svg {
+    width: 60px;
+    height: 60px;
+    opacity: 0.3;
+  }
+
+  .ai-ugc-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .ai-ugc-modal-{{ ai_gen_id }} {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .ai-ugc-modal-{{ ai_gen_id }}.active {
+    display: flex;
+  }
+
+  .ai-ugc-modal-content-{{ ai_gen_id }} {
+    display: flex;
+    background-color: {{ block.settings.modal_background }};
+    border-radius: {{ block.settings.modal_border_radius }}px;
+    max-width: 1100px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ai-ugc-modal-video-section-{{ ai_gen_id }} {
+    flex: 0 0 55%;
+    background-color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-ugc-modal-video-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .ai-ugc-modal-product-section-{{ ai_gen_id }} {
+    flex: 0 0 45%;
+    padding: 40px;
+    overflow-y: auto;
+    background-color: {{ block.settings.modal_background }};
+  }
+
+  .ai-ugc-modal-close-{{ ai_gen_id }} {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.3s ease;
+  }
+
+  .ai-ugc-modal-close-{{ ai_gen_id }}:hover {
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .ai-ugc-modal-close-{{ ai_gen_id }} svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ai-ugc-product-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.product_title_size }}px;
+    font-weight: 600;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 16px;
+    font-family: {{ block.settings.heading_font.family }}, {{ block.settings.heading_font.fallback_families }};
+    font-weight: {{ block.settings.heading_font.weight }};
+    letter-spacing: 0.5px;
+  }
+
+  .ai-ugc-product-price-{{ ai_gen_id }} {
+    font-size: {{ block.settings.price_size }}px;
+    color: {{ block.settings.price_color }};
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+
+  .ai-ugc-variant-selector-{{ ai_gen_id }} {
+    margin-bottom: 24px;
+  }
+
+  .ai-ugc-variant-label-{{ ai_gen_id }} {
+    font-size: 14px;
+    color: {{ block.settings.text_color }};
+    margin-bottom: 12px;
+    display: block;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .ai-ugc-variant-options-{{ ai_gen_id }} {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ai-ugc-variant-option-{{ ai_gen_id }} {
+    padding: 10px 20px;
+    border: 1px solid {{ block.settings.variant_border_color }};
+    background-color: transparent;
+    cursor: pointer;
+    border-radius: {{ block.settings.variant_border_radius }}px;
+    font-size: 14px;
+    color: {{ block.settings.text_color }};
+    transition: all 0.3s ease;
+  }
+
+  .ai-ugc-variant-option-{{ ai_gen_id }}:hover {
+    border-color: {{ block.settings.variant_hover_border }};
+    background-color: {{ block.settings.variant_hover_bg }};
+  }
+
+  .ai-ugc-variant-option-{{ ai_gen_id }}.selected {
+    background-color: {{ block.settings.variant_selected_bg }};
+    border-color: {{ block.settings.variant_selected_border }};
+    color: {{ block.settings.variant_selected_text }};
+  }
+
+  .ai-ugc-add-to-cart-{{ ai_gen_id }} {
+    width: 100%;
+    padding: 16px 32px;
+    background-color: {{ block.settings.button_bg }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-size: {{ block.settings.button_text_size }}px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .ai-ugc-add-to-cart-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_bg }};
+  }
+
+  .ai-ugc-product-empty-{{ ai_gen_id }} {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  @media screen and (max-width: 990px) {
+    .ai-ugc-gallery-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ai-ugc-modal-content-{{ ai_gen_id }} {
+      flex-direction: column;
+      max-height: 95vh;
+    }
+
+    .ai-ugc-modal-video-section-{{ ai_gen_id }} {
+      flex: 0 0 auto;
+      max-height: 60vh;
+    }
+
+    .ai-ugc-modal-product-section-{{ ai_gen_id }} {
+      flex: 1;
+      padding: 24px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-ugc-gallery-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat(2, 1fr);
+      gap: {{ block.settings.card_gap | divided_by: 2 }}px;
+    }
+
+    .ai-ugc-modal-product-section-{{ ai_gen_id }} {
+      padding: 20px;
+    }
+
+    .ai-ugc-product-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.product_title_size | times: 0.85 }}px;
+    }
+  }
+{% endstyle %}
+
+<ugc-gallery-{{ ai_gen_id }} class="ai-ugc-gallery-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-ugc-gallery-container-{{ ai_gen_id }}">
+    <div class="ai-ugc-gallery-grid-{{ ai_gen_id }}">
+      {% for i in (1..4) %}
+        {% liquid
+          assign video_key = 'video_' | append: i
+          assign product_key = 'product_' | append: i
+          assign video = block.settings[video_key]
+          assign product = block.settings[product_key]
+        %}
+        
+        <div class="ai-ugc-card-{{ ai_gen_id }}" data-card-index="{{ i }}">
+          {% if video != blank %}
+            <video
+              class="ai-ugc-card-video-{{ ai_gen_id }}"
+              src="{{ video }}"
+              muted
+              loop
+              playsinline
+              {% if block.settings.autoplay %}autoplay{% endif %}
+            ></video>
+          {% else %}
+            <div class="ai-ugc-card-placeholder-{{ ai_gen_id }}">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <div class="ai-ugc-empty-state-{{ ai_gen_id }}">
+                Add video {{ i }}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% for i in (1..4) %}
+    {% liquid
+      assign video_key = 'video_' | append: i
+      assign product_key = 'product_' | append: i
+      assign video = block.settings[video_key]
+      assign product = block.settings[product_key]
+    %}
+    
+    <div class="ai-ugc-modal-{{ ai_gen_id }}" data-modal-index="{{ i }}">
+      <div class="ai-ugc-modal-content-{{ ai_gen_id }}">
+        <button class="ai-ugc-modal-close-{{ ai_gen_id }}" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        
+        <div class="ai-ugc-modal-video-section-{{ ai_gen_id }}">
+          {% if video != blank %}
+            <video
+              class="ai-ugc-modal-video-{{ ai_gen_id }}"
+              src="{{ video }}"
+              controls
+              loop
+              playsinline
+            ></video>
+          {% endif %}
+        </div>
+        
+        <div class="ai-ugc-modal-product-section-{{ ai_gen_id }}">
+          {% if product != blank %}
+            <h3 class="ai-ugc-product-title-{{ ai_gen_id }}">{{ product.title }}</h3>
+            <div class="ai-ugc-product-price-{{ ai_gen_id }}">{{ product.price | money }}</div>
+            
+            {% if product.has_only_default_variant == false %}
+              <div class="ai-ugc-variant-selector-{{ ai_gen_id }}">
+                <label class="ai-ugc-variant-label-{{ ai_gen_id }}">Select Size</label>
+                <div class="ai-ugc-variant-options-{{ ai_gen_id }}">
+                  {% for variant in product.variants %}
+                    <button
+                      class="ai-ugc-variant-option-{{ ai_gen_id }} {% if forloop.first %}selected{% endif %}"
+                      data-variant-id="{{ variant.id }}"
+                      data-product-index="{{ i }}"
+                    >
+                      {{ variant.title }}
+                    </button>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            
+            <button
+              class="ai-ugc-add-to-cart-{{ ai_gen_id }}"
+              data-product-id="{{ product.id }}"
+              data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+              data-product-index="{{ i }}"
+            >
+              {{ block.settings.button_label }}
+            </button>
+          {% else %}
+            <div class="ai-ugc-product-empty-{{ ai_gen_id }}">
+              Add a product to make this video shoppable
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</ugc-gallery-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class UgcGallery{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.cards = this.querySelectorAll('.ai-ugc-card-{{ ai_gen_id }}');
+        this.modals = this.querySelectorAll('.ai-ugc-modal-{{ ai_gen_id }}');
+        this.closeButtons = this.querySelectorAll('.ai-ugc-modal-close-{{ ai_gen_id }}');
+        this.variantButtons = this.querySelectorAll('.ai-ugc-variant-option-{{ ai_gen_id }}');
+        this.addToCartButtons = this.querySelectorAll('.ai-ugc-add-to-cart-{{ ai_gen_id }}');
+      }
+
+      connectedCallback() {
+        this.setupCardListeners();
+        this.setupModalListeners();
+        this.setupVariantListeners();
+        this.setupAddToCartListeners();
+        this.setupVideoHover();
+      }
+
+      setupCardListeners() {
+        this.cards.forEach((card) => {
+          card.addEventListener('click', () => {
+            const index = card.getAttribute('data-card-index');
+            this.openModal(index);
+          });
+        });
+      }
+
+      setupModalListeners() {
+        this.closeButtons.forEach((button) => {
+          button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.closeAllModals();
+          });
+        });
+
+        this.modals.forEach((modal) => {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              this.closeAllModals();
+            }
+          });
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            this.closeAllModals();
+          }
+        });
+      }
+
+      setupVariantListeners() {
+        this.variantButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const productIndex = button.getAttribute('data-product-index');
+            const variantId = button.getAttribute('data-variant-id');
+            
+            this.querySelectorAll(`.ai-ugc-variant-option-{{ ai_gen_id }}[data-product-index="${productIndex}"]`).forEach((btn) => {
+              btn.classList.remove('selected');
+            });
+            
+            button.classList.add('selected');
+            
+            const addToCartButton = this.querySelector(`.ai-ugc-add-to-cart-{{ ai_gen_id }}[data-product-index="${productIndex}"]`);
+            if (addToCartButton) {
+              addToCartButton.setAttribute('data-variant-id', variantId);
+            }
+          });
+        });
+      }
+
+      setupAddToCartListeners() {
+        this.addToCartButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const variantId = button.getAttribute('data-variant-id');
+            this.addToCart(variantId, button);
+          });
+        });
+      }
+
+      setupVideoHover() {
+        const cardVideos = this.querySelectorAll('.ai-ugc-card-video-{{ ai_gen_id }}');
+        cardVideos.forEach((video) => {
+          if (!{{ block.settings.autoplay | json }}) {
+            video.parentElement.addEventListener('mouseenter', () => {
+              video.play();
+            });
+            video.parentElement.addEventListener('mouseleave', () => {
+              video.pause();
+            });
+          }
+        });
+      }
+
+      openModal(index) {
+        const modal = this.querySelector(`.ai-ugc-modal-{{ ai_gen_id }}[data-modal-index="${index}"]`);
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          
+          const video = modal.querySelector('.ai-ugc-modal-video-{{ ai_gen_id }}');
+          if (video) {
+            video.play();
+          }
+        }
+      }
+
+      closeAllModals() {
+        this.modals.forEach((modal) => {
+          modal.classList.remove('active');
+          const video = modal.querySelector('.ai-ugc-modal-video-{{ ai_gen_id }}');
+          if (video) {
+            video.pause();
+          }
+        });
+        document.body.style.overflow = '';
+      }
+
+      addToCart(variantId, button) {
+        const originalText = button.textContent;
+        button.textContent = 'Adding...';
+        button.disabled = true;
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: variantId,
+            quantity: 1
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          button.textContent = 'Added!';
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.disabled = false;
+          }, 2000);
+          
+          if (window.Shopify && window.Shopify.theme && window.Shopify.theme.cartUpdateCallbacks) {
+            window.Shopify.theme.cartUpdateCallbacks.forEach(callback => callback());
+          }
+          
+          document.dispatchEvent(new CustomEvent('cart:updated'));
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          button.textContent = 'Error';
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.disabled = false;
+          }, 2000);
+        });
+      }
+    }
+
+    customElements.define('ugc-gallery-{{ ai_gen_id }}', UgcGallery{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Shoppable UGC gallery",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximum width",
+      "min": 800,
+      "max": 1600,
+      "step": 100,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "label": "Section padding",
+      "min": 0,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Card spacing",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#FAF8F3"
+    },
+    {
+      "type": "header",
+      "content": "Video cards"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Card border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "shadow_vertical",
+      "label": "Shadow vertical offset",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "shadow_blur",
+      "label": "Shadow blur",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "shadow_opacity",
+      "label": "Shadow opacity",
+      "min": 0,
+      "max": 0.5,
+      "step": 0.1,
+      "default": 0.2
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay videos",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Video 1"
+    },
+    {
+      "type": "url",
+      "id": "video_1",
+      "label": "Video URL"
+    },
+    {
+      "type": "product",
+      "id": "product_1",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Video 2"
+    },
+    {
+      "type": "url",
+      "id": "video_2",
+      "label": "Video URL"
+    },
+    {
+      "type": "product",
+      "id": "product_2",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Video 3"
+    },
+    {
+      "type": "url",
+      "id": "video_3",
+      "label": "Video URL"
+    },
+    {
+      "type": "product",
+      "id": "product_3",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Video 4"
+    },
+    {
+      "type": "url",
+      "id": "video_4",
+      "label": "Video URL"
+    },
+    {
+      "type": "product",
+      "id": "product_4",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Modal style"
+    },
+    {
+      "type": "color",
+      "id": "modal_background",
+      "label": "Modal background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "modal_border_radius",
+      "label": "Modal border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Product details"
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Product title font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "product_title_size",
+      "label": "Product title size",
+      "min": 18,
+      "max": 36,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#2C2C2C"
+    },
+    {
+      "type": "range",
+      "id": "price_size",
+      "label": "Price size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "color",
+      "id": "price_color",
+      "label": "Price color",
+      "default": "#8B7355"
+    },
+    {
+      "type": "header",
+      "content": "Variant selector"
+    },
+    {
+      "type": "color",
+      "id": "variant_border_color",
+      "label": "Border color",
+      "default": "#D4C5B0"
+    },
+    {
+      "type": "color",
+      "id": "variant_hover_border",
+      "label": "Hover border color",
+      "default": "#8B7355"
+    },
+    {
+      "type": "color",
+      "id": "variant_hover_bg",
+      "label": "Hover background",
+      "default": "#FAF8F3"
+    },
+    {
+      "type": "color",
+      "id": "variant_selected_bg",
+      "label": "Selected background",
+      "default": "#2C2C2C"
+    },
+    {
+      "type": "color",
+      "id": "variant_selected_border",
+      "label": "Selected border",
+      "default": "#2C2C2C"
+    },
+    {
+      "type": "color",
+      "id": "variant_selected_text",
+      "label": "Selected text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "variant_border_radius",
+      "label": "Variant border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Add to cart button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "default": "Add to Cart"
+    },
+    {
+      "type": "range",
+      "id": "button_text_size",
+      "label": "Button text size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button background",
+      "default": "#2C2C2C"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_bg",
+      "label": "Button hover background",
+      "default": "#1A1A1A"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button border radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shoppable UGC gallery"
+    }
+  ]
+}
+{% endschema %}
