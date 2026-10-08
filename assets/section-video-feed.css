@@ -1,0 +1,113 @@
+.video-feed {
+  display: block;
+  --video-feed-gap: 1rem;
+}
+
+.video-feed__heading {
+  margin: 0 0 2rem;
+  text-align: center;
+}
+
+.video-feed__heading-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.video-feed__heading-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+
+.video-feed__wrapper {
+  position: relative;
+}
+
+.video-feed__track {
+  display: flex;
+  gap: var(--video-feed-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.video-feed__track::-webkit-scrollbar {
+  display: none;
+}
+
+.video-feed__item {
+  flex: 0 0 calc((100% - (var(--video-feed-columns) - 1) * var(--video-feed-gap)) / var(--video-feed-columns));
+  scroll-snap-align: start;
+}
+
+.video-feed__card {
+  position: relative;
+  display: block;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: var(--video-feed-radius);
+  background: rgba(var(--color-foreground), 0.06);
+}
+
+.video-feed__video,
+.video-feed__card--placeholder .placeholder-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-feed__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+  box-shadow: 0 0.2rem 1rem rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.video-feed__arrow[hidden] {
+  display: none;
+}
+
+.video-feed__arrow .icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.video-feed__arrow--prev {
+  left: 1rem;
+}
+
+.video-feed__arrow--prev .icon {
+  transform: rotate(90deg);
+}
+
+.video-feed__arrow--next {
+  right: 1rem;
+}
+
+.video-feed__arrow--next .icon {
+  transform: rotate(-90deg);
+}
+
+@media screen and (max-width: 749px) {
+  .video-feed__arrow {
+    display: none;
+  }
+}
