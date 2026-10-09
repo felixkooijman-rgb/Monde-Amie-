@@ -108,6 +108,65 @@
         "padding_bottom": 0
       }
     },
+    "video_feed_mondeamie": {
+      "type": "video-feed",
+      "blocks": {
+        "video_1": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/gemini_generated_video_3e8d3493.mp4",
+            "link": ""
+          }
+        },
+        "video_4": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/v0f044gc0000cl74hj7og65ghfq8kis0.MP4",
+            "link": ""
+          }
+        },
+        "video_2": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/8266114F-FBE5-4B5D-A809-EFD19E0DC4D9.mp4",
+            "link": ""
+          }
+        },
+        "video_3": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/56443ECB-D33D-4D53-9FD5-BEA51CBDDBF6.mp4",
+            "link": ""
+          }
+        },
+        "video_5": {
+          "type": "video",
+          "settings": {
+            "video": "shopify://files/videos/DA79D65A-0244-4DAA-ACF1-8B96289090FF.mp4",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "video_1",
+        "video_4",
+        "video_2",
+        "video_3",
+        "video_5"
+      ],
+      "settings": {
+        "heading": "@mondeamie",
+        "heading_link": "https://www.instagram.com/mondeamie",
+        "heading_size": "h2",
+        "columns_desktop": 4.5,
+        "columns_mobile": 1.7,
+        "corner_radius": 10,
+        "full_width": false,
+        "color_scheme": "background-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "collection_list_fBdJch": {
       "type": "collection-list",
       "blocks": {
@@ -279,65 +338,6 @@
         "padding_bottom": 0
       }
     },
-    "video_feed_mondeamie": {
-      "type": "video-feed",
-      "blocks": {
-        "video_1": {
-          "type": "video",
-          "settings": {
-            "video": "shopify://files/videos/gemini_generated_video_3e8d3493.mp4",
-            "link": ""
-          }
-        },
-        "video_4": {
-          "type": "video",
-          "settings": {
-            "video": "shopify://files/videos/v0f044gc0000cl74hj7og65ghfq8kis0.MP4",
-            "link": ""
-          }
-        },
-        "video_2": {
-          "type": "video",
-          "settings": {
-            "video": "shopify://files/videos/8266114F-FBE5-4B5D-A809-EFD19E0DC4D9.mp4",
-            "link": ""
-          }
-        },
-        "video_3": {
-          "type": "video",
-          "settings": {
-            "video": "shopify://files/videos/56443ECB-D33D-4D53-9FD5-BEA51CBDDBF6.mp4",
-            "link": ""
-          }
-        },
-        "video_5": {
-          "type": "video",
-          "settings": {
-            "video": "shopify://files/videos/DA79D65A-0244-4DAA-ACF1-8B96289090FF.mp4",
-            "link": ""
-          }
-        }
-      },
-      "block_order": [
-        "video_1",
-        "video_4",
-        "video_2",
-        "video_3",
-        "video_5"
-      ],
-      "settings": {
-        "heading": "@mondeamie",
-        "heading_link": "https://www.instagram.com/mondeamie",
-        "heading_size": "h2",
-        "columns_desktop": 4.5,
-        "columns_mobile": 1.7,
-        "corner_radius": 10,
-        "full_width": false,
-        "color_scheme": "background-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "1693157525c62c5b78": {
       "type": "apps",
       "blocks": {
@@ -378,12 +378,12 @@
     "d61b47e2-47ea-4d4b-8e5e-c03468e8855b",
     "3adf2aa2-82a7-4c2a-abbf-692c8ef4b6d7",
     "fc321814-d0df-46c9-b237-035a5e111060",
+    "video_feed_mondeamie",
     "collection_list_fBdJch",
     "featured_collection_JfxHUp",
     "ddb3c6d4-7b05-4b18-bc59-71ed38694498",
     "4839f29b-0f08-4144-8aa9-70933348de8d",
     "efbaf4db-9e7b-4212-b42f-37bce543c789",
-    "video_feed_mondeamie",
     "1693157525c62c5b78",
     "1785795556db055166"
   ]
